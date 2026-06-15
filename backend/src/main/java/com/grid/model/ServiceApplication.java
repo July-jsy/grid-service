@@ -9,6 +9,7 @@ public record ServiceApplication(
         String code,
         @NotBlank(message = "申请事项不能为空") String itemName,
         @NotBlank(message = "申请人不能为空") String applicant,
+        String ownerUsername,
         String phone,
         String materialsNote,
         String status,

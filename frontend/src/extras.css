@@ -2,6 +2,15 @@
 .tabs { display: flex; gap: 8px; margin-bottom: 18px; }
 .tabs button { border: 0; border-radius: 8px; padding: 9px 18px; background: #edf3ef; color: #567068; }
 .tabs button.active { background: #17614f; color: #fff; }
+.login-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 24px; }
+.login-tabs button { border: 0; border-radius: 8px; padding: 9px; background: #edf3ef; color: #567068; }
+.login-tabs button.active { background: #17614f; color: #fff; font-weight: 700; }
+.success { color: #237544; }
+.notice-list { display: grid; gap: 14px; }
+.notice-card { display: flex; justify-content: space-between; gap: 20px; padding: 20px; border: 1px solid #dfe8e3; border-radius: 12px; background: #fbfcfb; }
+.notice-card h3 { margin: 12px 0 6px; }
+.notice-card p { margin: 0 0 12px; color: #52655e; }
+.event-image { display: block; width: min(280px, 100%); max-height: 180px; object-fit: cover; border-radius: 9px; margin: 10px 0; border: 1px solid #dfe8e3; }
 
 @media (max-width: 700px) {
   .sidebar nav { grid-template-columns: repeat(3, 1fr); }

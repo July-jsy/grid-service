@@ -11,7 +11,9 @@ public record Event(
         @NotBlank(message = "事件分类不能为空") String category,
         @NotBlank(message = "所属网格不能为空") String gridName,
         String reporter,
+        String ownerUsername,
         String description,
+        String imageUrl,
         String status,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
