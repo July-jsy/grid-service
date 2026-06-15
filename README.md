@@ -110,7 +110,7 @@
 
 ### 1.6 系统管理模块
 
-- **用户与权限管理**：基于角色的权限控制（管理员、网格员、普通居民三级角色）
+- **用户与权限管理**：基于角色的权限控制（管理员、普通用户两级角色）
 - **数据字典配置**：事件类型、服务事项分类等系统参数可配置
 - **操作日志记录**：关键操作留痕（登录、事件处置、数据修改）
 
@@ -141,16 +141,22 @@
 
 ### 2.2 技术选型
 
-| 层级 | 技术选型 | 说明 |
-|------|----------|------|
-| 前端框架 | Vue 3 + Element Plus | 组件丰富，快速搭建后台管理界面 |
-| 图表可视化 | ECharts | 数据大屏图表渲染 |
-| 后端框架 | Spring Boot | 单体应用，约定优于配置 |
-| ORM框架 | MyBatis-Plus | 简化CRUD，减少SQL编写 |
-| 数据库 | SQLite | 轻量级文件数据库，零配置，无需安装服务，适合原型演示 |
-| 文件存储 | 本地文件系统 | 图片、附件存储 |
-| 接口文档 | Swagger / Knife4j | 自动生成API文档，方便前后端联调 |
-| 认证授权 | JWT + 拦截器 | 无状态认证，实现简单 |
+| 层级 | 技术选型 | 版本 | 说明 |
+|------|----------|------|------|
+| 前端框架 | Vue 3 | 3.5.35 | 组合式 API，响应式框架 |
+| UI 组件库 | Element Plus | 2.14.1 | 组件丰富，快速搭建后台管理界面 |
+| 构建工具 | Vite | 7.3.x | 新一代前端构建工具，HMR 极速热更新 |
+| 状态管理 | Pinia | 3.0.4 | Vue 3 官方状态管理库 |
+| HTTP 客户端 | Axios | 1.17.0 | 封装请求拦截、统一响应处理 |
+| 图表可视化 | ECharts | 6.1.0 | 数据大屏图表渲染 |
+| 后端框架 | Spring Boot | 3.5.14 | 单体应用，约定优于配置 |
+| ORM 框架 | MyBatis-Plus | 3.5.16 | 简化 CRUD，减少 SQL 编写 |
+| 数据库 | SQLite (sqlite-jdbc) | 3.51.1.0 | 轻量级文件数据库，零配置，无需安装服务，适合原型演示 |
+| 文件存储 | 本地文件系统 | — | 图片、附件存储 |
+| 认证授权 | Session（Servlet 内置） | — | 基于 Cookie 的会话认证，零额外依赖 |
+| 密码加密 | BCrypt (Spring Security) | — | 密码加密存储 |
+| 构建工具 | Maven | 3.9.x | Java 项目构建与依赖管理 |
+| 运行环境 | JDK / Node.js | JDK 17 / Node.js 20.19+ | 后端/前端运行时 |
 
 ### 2.3 技术选型说明
 
@@ -226,9 +232,8 @@ grid-service/
 │   ├── src/main/java/com/grid/
 │   │   ├── GridApplication.java       # 启动类
 │   │   ├── config/                    # 配置类
-│   │   │   ├── SecurityConfig.java    #   安全配置 (JWT拦截器)
-│   │   │   ├── CorsConfig.java        #   跨域配置
-│   │   │   └── SwaggerConfig.java     #   接口文档配置
+│   │   │   ├── SecurityConfig.java    #   安全配置 (Session拦截器)
+│   │   │   └── CorsConfig.java        #   跨域配置
 │   │   ├── controller/                # 控制器层
 │   │   │   ├── GridController.java    #   网格管理接口
 │   │   │   ├── ServiceController.java #   便民服务接口
@@ -264,7 +269,7 @@ grid-service/
 │   │   ├── common/                    # 公共类
 │   │   │   ├── Result.java            #   统一返回格式
 │   │   │   ├── PageResult.java        #   分页结果
-│   │   │   └── JwtUtil.java           #   JWT工具类
+│   │   │   └── SessionUtil.java        #   会话工具类
 │   │   └── interceptor/               # 拦截器
 │   │       └── AuthInterceptor.java   #   登录拦截器
 │   ├── src/main/resources/
