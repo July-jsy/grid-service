@@ -2,6 +2,97 @@
 
 ---
 
+## 快速启动
+
+### 环境要求
+
+- JDK 17+
+- Maven 3.9+
+- Node.js 20.19+
+- npm 10+
+
+### 启动后端
+
+在项目根目录执行：
+
+```powershell
+cd backend
+mvn spring-boot:run
+```
+
+后端默认地址：`http://localhost:8080`
+
+### 启动前端
+
+新开一个终端，在项目根目录执行：
+
+```powershell
+cd frontend
+npm install
+npm run dev
+```
+
+前端默认地址：`http://localhost:5173`
+
+### 登录账号
+
+- 用户名：`admin`
+- 密码：`admin123`
+
+### 构建命令
+
+```powershell
+# 构建后端
+cd backend
+mvn clean package
+
+# 构建前端
+cd frontend
+npm run build
+```
+
+### 当前已实现功能
+
+- Session 登录、退出及接口登录校验
+- 数据总览与事件状态统计
+- 网格信息增删改查
+- 居民档案和房屋档案管理
+- 服务事项管理、在线申办和申请状态流转
+- 事件上报、筛选和处置状态流转
+- 系统用户新增、查询和删除
+- 响应式 PC Web 管理界面
+
+> 当前版本为可演示 MVP，后端使用 SQLite 持久化业务数据。首次启动会自动创建 `backend/grid-service.db` 并写入示例数据。MyBatis-Plus、文件上传、GIS、Excel 导出等内容属于后续演进设计。
+
+### SQLite 是否需要安装
+
+不需要单独安装 SQLite 数据库服务。后端通过 Maven 依赖 `org.xerial:sqlite-jdbc` 直接读写 SQLite 文件：
+
+```xml
+<dependency>
+    <groupId>org.xerial</groupId>
+    <artifactId>sqlite-jdbc</artifactId>
+    <version>3.49.1.0</version>
+</dependency>
+```
+
+执行 `mvn spring-boot:run` 时 Maven 会自动下载驱动，系统会自动创建 `backend/grid-service.db`。如需手工查看数据库内容，可选装 DB Browser for SQLite，但它不是项目运行的必要条件。
+
+### 主要接口
+
+| 模块 | 接口前缀 |
+|------|----------|
+| 登录认证 | `/api/auth` |
+| 数据总览 | `/api/dashboard` |
+| 网格管理 | `/api/grids` |
+| 居民与房屋 | `/api/base-info` |
+| 服务事项 | `/api/service-items` |
+| 服务申请 | `/api/service-applications` |
+| 事件处置 | `/api/events` |
+| 用户管理 | `/api/users` |
+
+---
+
 ## 一、系统功能模块设计
 
 ### 1.1 功能模块总览
@@ -150,8 +241,8 @@
 | HTTP 客户端 | Axios | 1.17.0 | 封装请求拦截、统一响应处理 |
 | 图表可视化 | ECharts | 6.1.0 | 数据大屏图表渲染 |
 | 后端框架 | Spring Boot | 3.5.14 | 单体应用，约定优于配置 |
-| ORM 框架 | MyBatis-Plus | 3.5.16 | 简化 CRUD，减少 SQL 编写 |
-| 数据库 | SQLite (sqlite-jdbc) | 3.51.1.0 | 轻量级文件数据库，零配置，无需安装服务，适合原型演示 |
+| 数据访问 | Spring JDBC | Spring Boot 内置 | 通过 JdbcTemplate 读写原型数据 |
+| 数据库 | SQLite (sqlite-jdbc) | 3.49.1.0 | 轻量级文件数据库，零配置，无需安装服务，适合原型演示 |
 | 文件存储 | 本地文件系统 | — | 图片、附件存储 |
 | 认证授权 | Session（Servlet 内置） | — | 基于 Cookie 的会话认证，零额外依赖 |
 | 密码加密 | BCrypt (Spring Security) | — | 密码加密存储 |
@@ -175,7 +266,9 @@
 - 接口权限校验（不同角色访问不同功能）
 - 关键操作日志记录
 
-### 2.5 项目目录结构
+### 2.5 规划目录结构
+
+以下为项目后续完整演进时的规划结构；当前 MVP 的实际源码以 `frontend/src` 和 `backend/src` 为准。
 
 ```
 grid-service/

@@ -1,0 +1,8 @@
+.section-gap { margin-top: 20px; }
+.tabs { display: flex; gap: 8px; margin-bottom: 18px; }
+.tabs button { border: 0; border-radius: 8px; padding: 9px 18px; background: #edf3ef; color: #567068; }
+.tabs button.active { background: #17614f; color: #fff; }
+
+@media (max-width: 700px) {
+  .sidebar nav { grid-template-columns: repeat(3, 1fr); }
+}

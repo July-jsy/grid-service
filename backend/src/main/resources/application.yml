@@ -1,0 +1,19 @@
+server:
+  port: 8080
+  servlet:
+    session:
+      cookie:
+        same-site: lax
+
+spring:
+  application:
+    name: grid-service
+  datasource:
+    url: jdbc:sqlite:grid-service.db
+    driver-class-name: org.sqlite.JDBC
+    hikari:
+      maximum-pool-size: 1
+
+logging:
+  level:
+    com.grid: info
