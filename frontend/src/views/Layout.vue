@@ -6,12 +6,12 @@ import request from '../api'
 const route = useRoute()
 const router = useRouter()
 const title = computed(() => route.meta.title || '管理系统')
-const user = JSON.parse(localStorage.getItem('grid-user') || '{}')
+const user = JSON.parse(sessionStorage.getItem('grid-user') || '{}')
 const isAdmin = computed(() => user.role === '管理员')
 
 async function logout() {
   try { await request.post('/auth/logout') } finally {
-    localStorage.removeItem('grid-user')
+    sessionStorage.removeItem('grid-user')
     router.push('/login')
   }
 }

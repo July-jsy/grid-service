@@ -3,7 +3,7 @@ package com.grid.controller;
 import com.grid.common.Result;
 import com.grid.model.UserView;
 import com.grid.service.DataStore;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,18 +40,15 @@ public class DashboardController {
         data.put("houseCount", store.houses().size());
         data.put("noticeCount", store.notices().size());
         data.put("statusDistribution", Map.of(
-                "待处理", pending,
-                "处理中", processing,
-                "已办结", completed
-        ));
+                "待处理", pending, "处理中", processing, "已办结", completed));
         data.put("categoryDistribution", events.stream()
                 .collect(Collectors.groupingBy(event -> event.category(), Collectors.counting())));
         return Result.ok(data);
     }
 
     @GetMapping("/my-stats")
-    public Result<Map<String, Object>> myStats(HttpSession session) {
-        var user = (UserView) session.getAttribute("user");
+    public Result<Map<String, Object>> myStats(HttpServletRequest req) {
+        var user = (UserView) req.getAttribute("user");
         if (user == null) return Result.fail("请先登录");
         var username = user.username();
         long myEvents = store.events().stream().filter(e -> username.equals(e.ownerUsername())).count();

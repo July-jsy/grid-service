@@ -4,7 +4,7 @@ import com.grid.common.Result;
 import com.grid.model.Event;
 import com.grid.model.UserView;
 import com.grid.service.DataStore;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,9 +23,13 @@ public class EventController {
         this.store = store;
     }
 
+    private UserView currentUser(HttpServletRequest req) {
+        return (UserView) req.getAttribute("user");
+    }
+
     @GetMapping
-    public Result<List<Event>> list(@RequestParam(defaultValue = "") String status, HttpSession session) {
-        var user = (UserView) session.getAttribute("user");
+    public Result<List<Event>> list(@RequestParam(defaultValue = "") String status, HttpServletRequest req) {
+        var user = currentUser(req);
         return Result.ok(store.events().stream()
                 .filter(event -> status.isBlank() || status.equals(event.status()))
                 .filter(event -> "管理员".equals(user.role()) || user.username().equals(event.ownerUsername()))
@@ -34,8 +38,8 @@ public class EventController {
     }
 
     @PostMapping
-    public Result<Event> create(@Valid @RequestBody Event input, HttpSession session) {
-        var user = (UserView) session.getAttribute("user");
+    public Result<Event> create(@Valid @RequestBody Event input, HttpServletRequest req) {
+        var user = currentUser(req);
         var id = store.nextEventId();
         var now = LocalDateTime.now();
         var event = new Event(id, "EV-" + now.getYear() + String.format("%03d", id), input.title(), input.category(),
@@ -49,11 +53,11 @@ public class EventController {
     }
 
     @PutMapping("/{id}/status")
-    public Result<Event> updateStatus(@PathVariable Long id, @RequestBody StatusRequest request, HttpSession session) {
+    public Result<Event> updateStatus(@PathVariable Long id, @RequestBody StatusRequest request, HttpServletRequest req) {
         if (!STATUSES.contains(request.status())) throw new IllegalArgumentException("无效的事件状态");
         var index = findIndex(id);
         var old = store.events().get(index);
-        var user = (UserView) session.getAttribute("user");
+        var user = currentUser(req);
         var updated = new Event(old.id(), old.code(), old.title(), old.category(), old.gridName(), old.reporter(),
                 old.ownerUsername(), old.description(), old.imageUrl(), old.address(),
                 old.longitude(), old.latitude(), request.status(),
@@ -67,7 +71,7 @@ public class EventController {
     }
 
     @PutMapping("/{id}")
-    public Result<Event> update(@PathVariable Long id, @Valid @RequestBody Event input, HttpSession session) {
+    public Result<Event> update(@PathVariable Long id, @Valid @RequestBody Event input, HttpServletRequest req) {
         var index = findIndex(id);
         var old = store.events().get(index);
         var updated = new Event(id, old.code(), input.title(), input.category(), input.gridName(),
@@ -76,17 +80,17 @@ public class EventController {
                 old.createdAt(), LocalDateTime.now());
         store.events().set(index, updated);
         store.persist();
-        var user = (UserView) session.getAttribute("user");
+        var user = currentUser(req);
         store.addLog(null, user.username(), "编辑事件: " + updated.title(), "事件处置");
         return Result.ok(updated);
     }
 
     @DeleteMapping("/{id}")
-    public Result<Void> delete(@PathVariable Long id, HttpSession session) {
+    public Result<Void> delete(@PathVariable Long id, HttpServletRequest req) {
         var removed = store.events().get(findIndex(id));
         store.events().remove(findIndex(id));
         store.persist();
-        var user = (UserView) session.getAttribute("user");
+        var user = currentUser(req);
         store.addLog(null, user.username(), "删除事件: " + removed.title(), "事件处置");
         return Result.ok();
     }

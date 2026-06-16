@@ -4,7 +4,7 @@ import com.grid.common.Result;
 import com.grid.model.ServiceApplication;
 import com.grid.model.UserView;
 import com.grid.service.DataStore;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,17 +23,21 @@ public class ServiceApplicationController {
         this.store = store;
     }
 
+    private UserView currentUser(HttpServletRequest req) {
+        return (UserView) req.getAttribute("user");
+    }
+
     @GetMapping
-    public Result<List<ServiceApplication>> list(HttpSession session) {
-        var user = (UserView) session.getAttribute("user");
+    public Result<List<ServiceApplication>> list(HttpServletRequest req) {
+        var user = currentUser(req);
         return Result.ok(store.applications().stream()
                 .filter(item -> "管理员".equals(user.role()) || user.username().equals(item.ownerUsername()))
                 .sorted(Comparator.comparing(ServiceApplication::createdAt).reversed()).toList());
     }
 
     @PostMapping
-    public Result<ServiceApplication> create(@Valid @RequestBody ServiceApplication input, HttpSession session) {
-        var user = (UserView) session.getAttribute("user");
+    public Result<ServiceApplication> create(@Valid @RequestBody ServiceApplication input, HttpServletRequest req) {
+        var user = currentUser(req);
         var id = store.nextApplicationId();
         var now = LocalDateTime.now();
         var application = new ServiceApplication(id, "SA-" + now.getYear() + String.format("%03d", id),
@@ -48,7 +52,7 @@ public class ServiceApplicationController {
     }
 
     @PutMapping("/{id}/status")
-    public Result<ServiceApplication> updateStatus(@PathVariable Long id, @RequestBody StatusRequest request, HttpSession session) {
+    public Result<ServiceApplication> updateStatus(@PathVariable Long id, @RequestBody StatusRequest request, HttpServletRequest req) {
         if (!STATUSES.contains(request.status())) throw new IllegalArgumentException("无效的申请状态");
         for (int i = 0; i < store.applications().size(); i++) {
             var old = store.applications().get(i);
@@ -60,8 +64,7 @@ public class ServiceApplicationController {
                         old.createdAt(), LocalDateTime.now());
                 store.applications().set(i, updated);
                 store.persist();
-                var user = (UserView) session.getAttribute("user");
-                store.addLog(null, user.username(), "更新申请状态: " + old.itemName() + " → " + request.status(), "便民服务");
+                store.addLog(null, currentUser(req).username(), "更新申请状态: " + old.itemName() + " → " + request.status(), "便民服务");
                 return Result.ok(updated);
             }
         }
@@ -69,13 +72,12 @@ public class ServiceApplicationController {
     }
 
     @DeleteMapping("/{id}")
-    public Result<Void> delete(@PathVariable Long id, HttpSession session) {
+    public Result<Void> delete(@PathVariable Long id, HttpServletRequest req) {
         var removed = store.applications().stream().filter(a -> a.id().equals(id)).findFirst().orElse(null);
         if (!store.applications().removeIf(item -> item.id().equals(id)))
             throw new IllegalArgumentException("服务申请不存在");
         store.persist();
-        var user = (UserView) session.getAttribute("user");
-        store.addLog(null, user.username(), "删除服务申请: " + (removed != null ? removed.itemName() : id), "便民服务");
+        store.addLog(null, currentUser(req).username(), "删除服务申请: " + (removed != null ? removed.itemName() : id), "便民服务");
         return Result.ok();
     }
 

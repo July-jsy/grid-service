@@ -3,7 +3,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import request from '../api'
 
-const user = JSON.parse(localStorage.getItem('grid-user') || '{}')
+const user = JSON.parse(sessionStorage.getItem('grid-user') || '{}')
 const isAdmin = user.role === '管理员'
 const rows = ref([])
 const editing = ref(null)
@@ -37,7 +37,7 @@ onMounted(load)
       </div>
     </article></div>
   </section>
-  <el-dialog v-model="!!editing" :title="editing ? '编辑公告' : '发布公告'" width="520px" @close="close">
+  <el-dialog :model-value="editing !== null" :title="editing ? '编辑公告' : '发布公告'" width="520px" @close="close">
     <el-form :model="form" label-width="90px">
       <el-form-item label="公告标题"><el-input v-model="form.title" /></el-form-item>
       <el-form-item label="公告分类">

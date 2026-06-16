@@ -3,9 +3,21 @@ import axios from 'axios'
 const request = axios.create({
   baseURL: '/api',
   timeout: 10000,
-  withCredentials: true,
 })
 
+// 请求拦截器：自动附带 Token
+request.interceptors.request.use((config) => {
+  const stored = sessionStorage.getItem('grid-user')
+  if (stored) {
+    try {
+      const user = JSON.parse(stored)
+      if (user.token) config.headers.Authorization = `Bearer ${user.token}`
+    } catch {}
+  }
+  return config
+})
+
+// 响应拦截器：统一错误处理
 request.interceptors.response.use(
   (response) => {
     const result = response.data
@@ -14,7 +26,7 @@ request.interceptors.response.use(
   },
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('grid-user')
+      sessionStorage.removeItem('grid-user')
       if (location.pathname !== '/login') location.href = '/login'
     }
     return Promise.reject(new Error(error.response?.data?.message || error.message || '请求失败'))

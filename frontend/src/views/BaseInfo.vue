@@ -79,7 +79,7 @@ onMounted(load)
     </el-table>
   </section>
   <!-- Resident dialog -->
-  <el-dialog v-model="!!editing && editing.type === 'resident'" :title="editing?.id ? '编辑居民' : '新增居民'" width="520px" @close="close">
+  <el-dialog :model-value="editing !== null && editing.type === 'resident'" :title="editing?.id ? '编辑居民' : '新增居民'" width="520px" @close="close">
     <el-form :model="rForm" label-width="90px">
       <el-form-item label="姓名"><el-input v-model="rForm.name" /></el-form-item>
       <el-form-item label="性别"><el-select v-model="rForm.gender"><el-option label="男" value="男" /><el-option label="女" value="女" /></el-select></el-form-item>
@@ -94,7 +94,7 @@ onMounted(load)
     <template #footer><el-button @click="close">取消</el-button><el-button type="primary" @click="save">保存</el-button></template>
   </el-dialog>
   <!-- House dialog -->
-  <el-dialog v-model="!!editing && editing.type === 'house'" :title="editing?.id ? '编辑房屋' : '新增房屋'" width="520px" @close="close">
+  <el-dialog :model-value="editing !== null && editing.type === 'house'" :title="editing?.id ? '编辑房屋' : '新增房屋'" width="520px" @close="close">
     <el-form :model="hForm" label-width="90px">
       <el-form-item label="房屋编号"><el-input v-model="hForm.houseCode" /></el-form-item>
       <el-form-item label="地址"><el-input v-model="hForm.address" /></el-form-item>

@@ -2,12 +2,18 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import request from '../api'
-const user = JSON.parse(localStorage.getItem('grid-user') || '{}')
+const user = JSON.parse(sessionStorage.getItem('grid-user') || '{}')
 const isAdmin = user.role === '管理员'
-const rows = ref([]); const status = ref(''); const show = ref(false); const error = ref('')
+const rows = ref([]); const status = ref(''); const show = ref(false); const error = ref(''); const gridList = ref([])
 const form = reactive({ title: '', category: '', gridName: '', reporter: '居民上报', description: '', imageUrl: '', address: '', longitude: null, latitude: null })
 const statuses = ['待处理', '处理中', '已办结']
 async function load() { rows.value = await request.get('/events', { params: { status: status.value } }) }
+async function openDialog() {
+  Object.assign(form, { title: '', category: '', gridName: '', reporter: '居民上报', description: '', imageUrl: '', address: '', longitude: null, latitude: null })
+  error.value = ''
+  show.value = true
+  gridList.value = await request.get('/grids')
+}
 async function save() { try { await request.post('/events', form); show.value = false; await load(); ElMessage.success('事件上报成功') } catch(e) { error.value = e.message } }
 async function change(row, value) { await request.put(`/events/${row.id}/status`, { status: value }); await load(); ElMessage.success('状态已更新') }
 async function remove(id) { if (confirm('确定删除该事件吗？')) { await request.delete(`/events/${id}`); await load() } }
@@ -23,7 +29,7 @@ onMounted(load)
 </script>
 <template>
   <section class="panel">
-    <div class="panel-head"><div><p class="eyebrow">EVENT CENTER</p><h3>{{ isAdmin ? '事件闭环处置' : '我的上报事件' }}</h3></div><button class="primary" @click="show = true">上报事件</button></div>
+    <div class="panel-head"><div><p class="eyebrow">EVENT CENTER</p><h3>{{ isAdmin ? '事件闭环处置' : '我的上报事件' }}</h3></div><button class="primary" @click="openDialog">上报事件</button></div>
     <div class="toolbar"><el-select v-model="status" clearable placeholder="全部状态" @change="load" style="width:150px"><el-option v-for="item in statuses" :key="item" :label="item" :value="item" /></el-select></div>
     <div class="event-list"><article v-for="row in rows" :key="row.id" class="event-card">
       <div style="flex:1">
@@ -50,7 +56,11 @@ onMounted(load)
       <el-form-item label="事件分类">
         <el-select v-model="form.category" style="width:100%"><el-option disabled value="">请选择</el-option><el-option label="城市管理" value="城市管理" /><el-option label="公共安全" value="公共安全" /><el-option label="环境卫生" value="环境卫生" /><el-option label="矛盾纠纷" value="矛盾纠纷" /><el-option label="民生服务" value="民生服务" /></el-select>
       </el-form-item>
-      <el-form-item label="所属网格"><el-input v-model="form.gridName" /></el-form-item>
+      <el-form-item label="所属网格">
+        <el-select v-model="form.gridName" style="width:100%" filterable placeholder="请选择网格">
+          <el-option v-for="g in gridList" :key="g.id" :label="g.name" :value="g.name" />
+        </el-select>
+      </el-form-item>
       <el-form-item v-if="isAdmin" label="事件来源"><el-input v-model="form.reporter" /></el-form-item>
       <el-form-item label="事件地址"><el-input v-model="form.address" /></el-form-item>
       <el-form-item label="现场图片"><input type="file" accept="image/jpeg,image/png,image/webp" @change="upload" /></el-form-item>

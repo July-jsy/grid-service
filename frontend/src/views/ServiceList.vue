@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
 import request from '../api'
-const user = JSON.parse(localStorage.getItem('grid-user') || '{}')
+const user = JSON.parse(sessionStorage.getItem('grid-user') || '{}')
 const isAdmin = user.role === '管理员'
 const rows = ref([]); const applications = ref([]); const show = ref(false); const applyShow = ref(false); const editing = ref(null); const error = ref('')
 const form = reactive({ name: '', category: '', department: '', description: '', requiredMaterials: '', process: '', timeLimit: '', status: '启用' })
@@ -57,7 +57,7 @@ onMounted(load)
     </el-table>
   </section>
   <!-- Service item dialog -->
-  <el-dialog v-model="!!editing" :title="editing ? '编辑服务事项' : '新增服务事项'" width="520px" @close="close">
+  <el-dialog :model-value="editing !== null" :title="editing ? '编辑服务事项' : '新增服务事项'" width="520px" @close="close">
     <el-form :model="form" label-width="90px">
       <el-form-item label="事项名称"><el-input v-model="form.name" /></el-form-item>
       <el-form-item label="服务分类"><el-input v-model="form.category" /></el-form-item>

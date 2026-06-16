@@ -48,7 +48,7 @@ onMounted(load)
       <el-table-column prop="createTime" label="时间" width="160"><template #default="{ row }">{{ format(row.createTime) }}</template></el-table-column>
     </el-table>
   </section>
-  <el-dialog v-model="!!editing" :title="editing ? '编辑用户' : '新增用户'" width="480px" @close="close">
+  <el-dialog :model-value="editing !== null" :title="editing ? '编辑用户' : '新增用户'" width="480px" @close="close">
     <el-form :model="form" label-width="90px">
       <el-form-item label="用户名"><el-input v-model="form.username" /></el-form-item>
       <el-form-item label="姓名"><el-input v-model="form.displayName" /></el-form-item>

@@ -15,9 +15,10 @@ async function login() {
   loading.value = true
   error.value = ''
   try {
-    const user = await request.post('/auth/login', form)
-    localStorage.setItem('grid-user', JSON.stringify(user))
-    router.push(user.role === '管理员' ? '/' : '/services')
+    const data = await request.post('/auth/login', form)
+    // data = { username, displayName, role, token }
+    sessionStorage.setItem('grid-user', JSON.stringify(data))
+    router.push(data.role === '管理员' ? '/' : '/services')
   } catch (e) {
     error.value = e.message
   } finally {
@@ -34,11 +35,10 @@ async function register() {
   }
   loading.value = true
   try {
-    await request.post('/auth/register', registerForm)
-    form.username = registerForm.username
-    form.password = registerForm.password
-    message.value = '注册成功，请登录'
-    mode.value = 'login'
+    const data = await request.post('/auth/register', registerForm)
+    // data = { username, displayName, role, token }
+    sessionStorage.setItem('grid-user', JSON.stringify(data))
+    router.push(data.role === '管理员' ? '/' : '/services')
   } catch (e) {
     error.value = e.message
   } finally {

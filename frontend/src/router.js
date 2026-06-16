@@ -34,8 +34,14 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
-  if (to.path !== '/login' && !localStorage.getItem('grid-user')) return '/login'
-  const user = JSON.parse(localStorage.getItem('grid-user') || '{}')
+  // 检查是否有 token（即已登录）
+  const stored = sessionStorage.getItem('grid-user')
+  if (!stored) {
+    if (to.path === '/login') return true
+    return '/login'
+  }
+  const user = JSON.parse(stored)
+  if (to.path === '/login') return user.role === '管理员' ? '/' : '/services'
   if (to.meta.adminOnly && user.role !== '管理员') return '/services'
 })
 

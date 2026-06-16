@@ -1,27 +1,30 @@
 package com.grid.controller;
 
 import com.grid.common.Result;
+import com.grid.config.JwtUtil;
 import com.grid.model.SystemUser;
 import com.grid.model.UserView;
 import com.grid.service.DataStore;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
     private final DataStore store;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
-    public AuthController(DataStore store, PasswordEncoder passwordEncoder) {
+    public AuthController(DataStore store, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.store = store;
         this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
     }
 
     public record LoginRequest(@NotBlank String username, @NotBlank String password) {}
@@ -35,13 +38,10 @@ public class AuthController {
             @NotBlank(message = "旧密码不能为空") String oldPassword,
             @NotBlank(message = "新密码不能为空") String newPassword
     ) {}
-    public record ProfileUpdateRequest(
-            String displayName,
-            String phone
-    ) {}
+    public record ProfileUpdateRequest(String displayName, String phone) {}
 
     @PostMapping("/login")
-    public Result<UserView> login(@Valid @RequestBody LoginRequest request, HttpSession session) {
+    public Result<Map<String, Object>> login(@Valid @RequestBody LoginRequest request) {
         var account = store.users().stream()
                 .filter(item -> item.username().equals(request.username()) && "启用".equals(item.status()))
                 .findFirst().orElse(null);
@@ -49,13 +49,18 @@ public class AuthController {
             return Result.fail("用户名或密码错误");
         }
         var user = new UserView(account.username(), account.displayName(), account.role());
-        session.setAttribute("user", user);
+        var token = jwtUtil.generate(user);
         store.addLog(null, account.username(), "用户登录", "系统认证");
-        return Result.ok(user);
+        return Result.ok(Map.of(
+                "username", user.username(),
+                "displayName", user.displayName(),
+                "role", user.role(),
+                "token", token
+        ));
     }
 
     @PostMapping("/register")
-    public Result<UserView> register(@Valid @RequestBody RegisterRequest request) {
+    public Result<Map<String, Object>> register(@Valid @RequestBody RegisterRequest request) {
         if (request.username().length() < 3 || request.password().length() < 6) {
             return Result.fail("用户名至少3位，密码至少6位");
         }
@@ -67,20 +72,26 @@ public class AuthController {
                 passwordEncoder.encode(request.password()), "普通用户", request.phone(), "启用", now, now);
         store.users().add(user);
         store.persist();
+        var view = new UserView(user.username(), user.displayName(), user.role());
         store.addLog(null, user.username(), "用户注册", "系统认证");
-        return Result.ok(new UserView(user.username(), user.displayName(), user.role()));
+        return Result.ok(Map.of(
+                "username", view.username(),
+                "displayName", view.displayName(),
+                "role", view.role(),
+                "token", jwtUtil.generate(view)
+        ));
     }
 
     @GetMapping("/me")
     public Result<Object> me(HttpServletRequest request) {
-        var sessionUser = request.getSession().getAttribute("user");
-        if (sessionUser == null) return Result.fail("未登录");
-        var view = (UserView) sessionUser;
+        var user = request.getAttribute("user");
+        if (user == null) return Result.fail("未登录");
+        var view = (UserView) user;
         var account = store.users().stream()
                 .filter(u -> u.username().equals(view.username()))
                 .findFirst().orElse(null);
         if (account == null) return Result.ok(view);
-        return Result.ok(java.util.Map.of(
+        return Result.ok(Map.of(
                 "username", account.username(),
                 "displayName", account.displayName(),
                 "role", account.role(),
@@ -89,8 +100,8 @@ public class AuthController {
     }
 
     @PutMapping("/password")
-    public Result<Void> changePassword(@Valid @RequestBody PasswordChangeRequest request, HttpSession session) {
-        var view = (UserView) session.getAttribute("user");
+    public Result<Void> changePassword(@Valid @RequestBody PasswordChangeRequest request, HttpServletRequest req) {
+        var view = (UserView) req.getAttribute("user");
         if (view == null) return Result.fail("请先登录");
         var idx = -1;
         for (int i = 0; i < store.users().size(); i++) {
@@ -114,8 +125,8 @@ public class AuthController {
     }
 
     @PutMapping("/profile")
-    public Result<UserView> updateProfile(@Valid @RequestBody ProfileUpdateRequest request, HttpSession session) {
-        var view = (UserView) session.getAttribute("user");
+    public Result<Map<String, Object>> updateProfile(@Valid @RequestBody ProfileUpdateRequest request, HttpServletRequest req) {
+        var view = (UserView) req.getAttribute("user");
         if (view == null) return Result.fail("请先登录");
         var idx = -1;
         for (int i = 0; i < store.users().size(); i++) {
@@ -131,15 +142,18 @@ public class AuthController {
         store.users().set(idx, updated);
         store.persist();
         var newView = new UserView(updated.username(), updated.displayName(), updated.role());
-        session.setAttribute("user", newView);
-        return Result.ok(newView);
+        return Result.ok(Map.of(
+                "username", newView.username(),
+                "displayName", newView.displayName(),
+                "role", newView.role(),
+                "token", jwtUtil.generate(newView)
+        ));
     }
 
     @PostMapping("/logout")
-    public Result<Void> logout(HttpSession session) {
-        var view = (UserView) session.getAttribute("user");
+    public Result<Void> logout(HttpServletRequest req) {
+        var view = (UserView) req.getAttribute("user");
         if (view != null) store.addLog(null, view.username(), "用户登出", "系统认证");
-        session.invalidate();
         return Result.ok();
     }
 }

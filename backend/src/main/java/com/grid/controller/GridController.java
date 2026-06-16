@@ -4,7 +4,7 @@ import com.grid.common.Result;
 import com.grid.model.Grid;
 import com.grid.model.UserView;
 import com.grid.service.DataStore;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +20,10 @@ public class GridController {
         this.store = store;
     }
 
+    private UserView currentUser(HttpServletRequest req) {
+        return (UserView) req.getAttribute("user");
+    }
+
     @GetMapping
     public Result<List<Grid>> list(@RequestParam(defaultValue = "") String keyword) {
         var result = store.grids().stream()
@@ -30,34 +34,34 @@ public class GridController {
     }
 
     @PostMapping
-    public Result<Grid> create(@Valid @RequestBody Grid input, HttpSession session) {
+    public Result<Grid> create(@Valid @RequestBody Grid input, HttpServletRequest req) {
         var grid = new Grid(store.nextGridId(), input.code(), input.name(), input.community(), input.description(),
-                input.staffName(), input.staffPhone(), input.residentCount(), input.longitude(), input.latitude());
+                input.staffName(), input.staffPhone(), input.residentCount(), input.longitude(), input.latitude(), input.fencePoints());
         store.grids().add(grid);
         store.persist();
-        var user = (UserView) session.getAttribute("user");
+        var user = currentUser(req);
         store.addLog(null, user.username(), "新增网格: " + grid.name(), "网格管理");
         return Result.ok(grid);
     }
 
     @PutMapping("/{id}")
-    public Result<Grid> update(@PathVariable Long id, @Valid @RequestBody Grid input, HttpSession session) {
+    public Result<Grid> update(@PathVariable Long id, @Valid @RequestBody Grid input, HttpServletRequest req) {
         var index = findIndex(id);
         var grid = new Grid(id, input.code(), input.name(), input.community(), input.description(),
-                input.staffName(), input.staffPhone(), input.residentCount(), input.longitude(), input.latitude());
+                input.staffName(), input.staffPhone(), input.residentCount(), input.longitude(), input.latitude(), input.fencePoints());
         store.grids().set(index, grid);
         store.persist();
-        var user = (UserView) session.getAttribute("user");
+        var user = currentUser(req);
         store.addLog(null, user.username(), "修改网格: " + grid.name(), "网格管理");
         return Result.ok(grid);
     }
 
     @DeleteMapping("/{id}")
-    public Result<Void> delete(@PathVariable Long id, HttpSession session) {
+    public Result<Void> delete(@PathVariable Long id, HttpServletRequest req) {
         var removed = store.grids().get(findIndex(id));
         store.grids().remove(findIndex(id));
         store.persist();
-        var user = (UserView) session.getAttribute("user");
+        var user = currentUser(req);
         store.addLog(null, user.username(), "删除网格: " + removed.name(), "网格管理");
         return Result.ok();
     }

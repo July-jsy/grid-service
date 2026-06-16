@@ -13,7 +13,7 @@ import java.util.Set;
 @Component
 public class RoleInterceptor implements HandlerInterceptor {
     private static final Set<String> ADMIN_PREFIXES = Set.of(
-            "/api/dashboard", "/api/grids", "/api/base-info", "/api/users"
+            "/api/base-info", "/api/users"
     );
     private final ObjectMapper objectMapper;
 
@@ -23,12 +23,14 @@ public class RoleInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        var user = (UserView) request.getSession().getAttribute("user");
+        var user = (UserView) request.getAttribute("user");
         if (user != null && "管理员".equals(user.role())) return true;
 
         var path = request.getRequestURI();
         var method = request.getMethod();
         boolean adminOnly = ADMIN_PREFIXES.stream().anyMatch(path::startsWith)
+                || path.startsWith("/api/dashboard") && !path.equals("/api/dashboard/my-stats")
+                || path.startsWith("/api/grids") && !"GET".equals(method)
                 || path.startsWith("/api/service-items") && !"GET".equals(method)
                 || path.startsWith("/api/notices") && !"GET".equals(method)
                 || path.matches("/api/service-applications/\\d+/status")

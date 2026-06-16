@@ -12,6 +12,7 @@ public record Grid(
         String staffPhone,
         int residentCount,
         Double longitude,
-        Double latitude
+        Double latitude,
+        String fencePoints
 ) {
 }
