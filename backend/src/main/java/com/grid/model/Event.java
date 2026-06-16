@@ -14,7 +14,12 @@ public record Event(
         String ownerUsername,
         String description,
         String imageUrl,
+        String address,
+        Double longitude,
+        Double latitude,
         String status,
+        Long handlerId,
+        String handleResult,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {

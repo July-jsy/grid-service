@@ -8,6 +8,8 @@ import EventList from './views/EventList.vue'
 import BaseInfo from './views/BaseInfo.vue'
 import UserList from './views/UserList.vue'
 import NoticeList from './views/NoticeList.vue'
+import Profile from './views/Profile.vue'
+import MapView from './views/MapView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -23,7 +25,9 @@ const router = createRouter({
         { path: 'services', component: ServiceList, meta: { title: '便民服务' } },
         { path: 'events', component: EventList, meta: { title: '事件处置' } },
         { path: 'notices', component: NoticeList, meta: { title: '通知公告' } },
-        { path: 'users', component: UserList, meta: { title: '用户管理', adminOnly: true } },
+        { path: 'users', component: UserList, meta: { title: '系统管理', adminOnly: true } },
+        { path: 'profile', component: Profile, meta: { title: '个人中心' } },
+        { path: 'map', component: MapView, meta: { title: '地图可视化', adminOnly: true } },
       ],
     },
   ],

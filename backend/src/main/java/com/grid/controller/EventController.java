@@ -40,25 +40,58 @@ public class EventController {
         var now = LocalDateTime.now();
         var event = new Event(id, "EV-" + now.getYear() + String.format("%03d", id), input.title(), input.category(),
                 input.gridName(), "管理员".equals(user.role()) ? input.reporter() : user.displayName(),
-                user.username(), input.description(), input.imageUrl(), "待处理", now, now);
+                user.username(), input.description(), input.imageUrl(), input.address(),
+                input.longitude(), input.latitude(), "待处理", null, null, now, now);
         store.events().add(event);
         store.persist();
+        store.addLog(null, user.username(), "上报事件: " + event.title(), "事件处置");
         return Result.ok(event);
     }
 
     @PutMapping("/{id}/status")
-    public Result<Event> updateStatus(@PathVariable Long id, @RequestBody StatusRequest request) {
+    public Result<Event> updateStatus(@PathVariable Long id, @RequestBody StatusRequest request, HttpSession session) {
         if (!STATUSES.contains(request.status())) throw new IllegalArgumentException("无效的事件状态");
         var index = findIndex(id);
         var old = store.events().get(index);
+        var user = (UserView) session.getAttribute("user");
         var updated = new Event(old.id(), old.code(), old.title(), old.category(), old.gridName(), old.reporter(),
-                old.ownerUsername(), old.description(), old.imageUrl(), request.status(), old.createdAt(), LocalDateTime.now());
+                old.ownerUsername(), old.description(), old.imageUrl(), old.address(),
+                old.longitude(), old.latitude(), request.status(),
+                "管理员".equals(user.role()) ? request.handlerId() : old.handlerId(),
+                request.handleResult() != null ? request.handleResult() : old.handleResult(),
+                old.createdAt(), LocalDateTime.now());
         store.events().set(index, updated);
         store.persist();
+        store.addLog(null, user.username(), "更新事件状态: " + old.title() + " → " + request.status(), "事件处置");
         return Result.ok(updated);
     }
 
-    public record StatusRequest(String status) {}
+    @PutMapping("/{id}")
+    public Result<Event> update(@PathVariable Long id, @Valid @RequestBody Event input, HttpSession session) {
+        var index = findIndex(id);
+        var old = store.events().get(index);
+        var updated = new Event(id, old.code(), input.title(), input.category(), input.gridName(),
+                input.reporter(), old.ownerUsername(), input.description(), input.imageUrl(), input.address(),
+                input.longitude(), input.latitude(), old.status(), old.handlerId(), old.handleResult(),
+                old.createdAt(), LocalDateTime.now());
+        store.events().set(index, updated);
+        store.persist();
+        var user = (UserView) session.getAttribute("user");
+        store.addLog(null, user.username(), "编辑事件: " + updated.title(), "事件处置");
+        return Result.ok(updated);
+    }
+
+    @DeleteMapping("/{id}")
+    public Result<Void> delete(@PathVariable Long id, HttpSession session) {
+        var removed = store.events().get(findIndex(id));
+        store.events().remove(findIndex(id));
+        store.persist();
+        var user = (UserView) session.getAttribute("user");
+        store.addLog(null, user.username(), "删除事件: " + removed.title(), "事件处置");
+        return Result.ok();
+    }
+
+    public record StatusRequest(String status, Long handlerId, String handleResult) {}
 
     private int findIndex(Long id) {
         for (int i = 0; i < store.events().size(); i++) {

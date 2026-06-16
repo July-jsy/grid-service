@@ -2,6 +2,8 @@ package com.grid.model;
 
 import jakarta.validation.constraints.NotBlank;
 
+import java.time.LocalDateTime;
+
 public record SystemUser(
         Long id,
         @NotBlank(message = "用户名不能为空") String username,
@@ -9,6 +11,8 @@ public record SystemUser(
         String password,
         String role,
         String phone,
-        String status
+        String status,
+        LocalDateTime createTime,
+        LocalDateTime updateTime
 ) {
 }

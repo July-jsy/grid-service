@@ -12,6 +12,18 @@
 .notice-card p { margin: 0 0 12px; color: #52655e; }
 .event-image { display: block; width: min(280px, 100%); max-height: 180px; object-fit: cover; border-radius: 9px; margin: 10px 0; border: 1px solid #dfe8e3; }
 
+/* Element Plus overrides */
+.el-table { font-size: 14px; }
+.el-table th { background: #f7f9f8 !important; color: #71817b !important; font-size: 12px; }
+.el-descriptions { margin-top: 8px; }
+.el-dialog { border-radius: 14px; }
+.el-dialog__header { padding: 20px 24px 10px; }
+.el-dialog__body { padding: 10px 24px 20px; }
+.el-dialog__footer { padding: 0 24px 20px; }
+.el-button--primary { --el-button-bg-color: #17614f; --el-button-border-color: #17614f; --el-button-hover-bg-color: #0f4c3d; --el-button-hover-border-color: #0f4c3d; }
+.el-tag--success { --el-tag-bg-color: #e3f3e8; --el-tag-text-color: #237544; }
+.el-tag--danger { --el-tag-bg-color: #fde8e8; --el-tag-text-color: #b33b32; }
+
 @media (max-width: 700px) {
   .sidebar nav { grid-template-columns: repeat(3, 1fr); }
 }

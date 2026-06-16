@@ -10,6 +10,8 @@ public record Grid(
         String description,
         String staffName,
         String staffPhone,
-        int residentCount
+        int residentCount,
+        Double longitude,
+        Double latitude
 ) {
 }
