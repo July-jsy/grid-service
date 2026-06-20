@@ -2,243 +2,176 @@
 
 ## 一、管理员功能
 
-管理员拥有系统全权限操作，负责整体运维、数据管理、业务审核与统筹调度，可使用系统所有模块功能。预留高德js api
+管理员拥有系统全权限操作，负责整体运维、数据管理、业务审核与统筹调度，可使用系统所有模块功能。
 
-1. **数据总览模块**：查看今日事件、已办结事件、待处理事件、服务申请、居民、房屋等各类数据统计，查看事件分类分析与基于 ECharts 的社区数据可视化内容。
-2. **网格管理模块**：完成网格信息的新增、修改、删除与查询，开展网格区域划分、网格员分配工作，依托高德地图实现网格区域展示、位置标记与范围查看。
-3. **居民信息管理模块**：对居民信息进行新增、修改、删除和查询，开展特殊群体管理与居民档案维护工作，统筹管理居民姓名、性别、联系方式、身份证号、家庭住址、所属网格等信息。
-4. **房屋信息管理模块**：完成房屋信息录入、修改、删除、查询，建立房屋与居民的关联关系，管理房屋地址、类型、状态、所属网格、居住人员等内容，借助高德地图展示房屋位置并完成地址定位。
-5. **便民服务模块**：发布、修改、删除低保申请、医保办理、养老保险办理等各类服务事项，查看居民提交的服务申请记录，对申请进行审核并更新待受理、办理中、已办结等办理状态。
-6. **事件上报与处置模块**：查看居民上报的各类社区事件，进行事件受理、任务分派，实时更新处理进度、上传处理结果并完成办结审核，通过高德地图实现事件定位、位置查看与整体分布展示。
-7. **通知公告模块**：编辑、发布、修改和删除社区公告、活动通知、政策宣传类内容。
-8. **用户管理模块**：对系统用户进行查询、新增、删除，管理用户账号状态以及管理员、普通用户两类角色权限。
-9. **个人中心模块**：查看并修改个人资料、登录密码，查询个人历史申请记录与历史上报、处理事件。
-10. **地图可视化模块**：使用高德地图查看网格、社区、房屋、事件位置，进行地址搜索、地理编码解析以及各类地图标记查看。
+1. **数据总览模块**：查看事件总数、已办结事件、待处理事件、处理中事件、服务申请、居民、房屋等各类数据统计。Dashboard 页面集成 ECharts 柱状图（事件处置进度）和饼图（事件分类分布），事件办结率以 Hero 大数字展示，辅以 8 个指标卡片（网格数、居民数、事件数、服务事项数、待处理、处理中、已办结、通知公告数）形成完整治理看板。
+2. **网格管理模块**：完成网格信息的查询（支持关键词搜索）、新增、编辑和删除。集成高德地图 JS API 2.0，在新增/编辑弹窗中通过 AMap.MouseTool 实现多边形围栏在线圈选（单击落点→双击完成），围栏坐标以 [[lng,lat],...] JSON 格式持久化存储至 fencePoints 字段。支持重新圈选和清除围栏。网格列表的 GET 接口对所有认证用户开放以支持事件上报时的下拉选择。
+3. **居民信息管理模块**：对居民信息进行新增、编辑、删除和查询（支持按姓名和地址搜索）。管理居民姓名、性别、身份证号、联系电话、所属网格、居住地址、居民类型（常住人口/流动人口/独居老人/特殊人群）和备注信息。通过 gridId 和 houseId 外键关联网格和房屋。
+4. **房屋信息管理模块**：完成房屋信息的查询、新增、编辑和删除。管理房屋编号、详细地址、楼栋、单元、门牌号、所属网格、房屋类型（商品房/经济适用房/公租房/自建房）、使用状态（自住/出租/空置）、户主姓名、居住人数以及经纬度坐标。房屋经纬度为地图可视化中的蓝色标记提供数据。
+5. **便民服务模块**：发布、编辑、删除各类服务事项，包含事项名称、服务分类、办理部门、事项描述、所需材料、办理流程、办理时限和启用/停用状态。查看居民提交的服务申请记录，对申请进行审批流转：待受理→办理中→已办结/已驳回。状态通过下拉选择框切换，标签颜色自动同步（橙/蓝/绿/红）。
+6. **事件上报与处置模块**：查看全部事件列表（支持按状态筛选），进行事件受理与状态流转（待处理→处理中→已办结），填写处理结果。可编辑和删除事件。事件上报支持选择所属网格（下拉加载已有网格）、选择分类、填写地址和经纬度、上传现场图片（JPG/PNG/WebP，≤5MB，UUID 重命名存储）。
+7. **通知公告模块**：发布、编辑、删除社区公告，支持分类管理（社区通知/便民服务/政策宣传/社区活动）和发布状态控制（已发布/草稿）。公告列表按发布时间倒序排列。
+8. **用户管理模块**：对系统用户进行查询、新增、编辑、删除。管理用户名、姓名、角色（管理员/普通用户）、联系电话、账号状态（启用/禁用）。系统内置 admin 账号不可删除。支持在"操作日志"标签页查看系统操作日志（按时间倒序，最多 100 条）。
+9. **个人中心模块**：查看并编辑个人资料（姓名、电话），修改登录密码（需验证旧密码，新密码≥6位）。查看系统全局统计数据（事件总数、已办结数、待处理数、服务申请数）。
+10. **地图可视化模块**：在高德地图上展示网格围栏（AMap.Polygon 绿色半透明多边形+名称标签）、事件位置（红色圆形标记）和房屋位置（蓝色圆形标记）三层叠加。点击任意地图元素查看详情。无围栏的网格回退显示点标记。顶部统计栏实时显示各类标记数量。
 
 ## 二、普通用户功能
 
 普通用户主要面向辖区居民，侧重线上办事、问题上报、信息查看以及个人账号管理，仅开放居民使用类功能。
 
-1. **便民服务模块**：浏览系统内公示的各项便民服务事项，在线填写申请表单、上传申请材料并提交业务办理申请。
-2. **事件上报与处置模块**：线上上报环境卫生、公共设施损坏、安全隐患、邻里纠纷及其他社区问题，支持填写文字描述、上传现场图片、标注事件地址定位。
-3. **通知公告模块**：浏览查看社区发布的公告、活动通知与政策宣传详情。
-4. **个人中心模块**：查看、修改个人资料与登录密码，查阅自己过往提交的服务申请和上报事件记录。
-5. **地图可视化模块**：通过高德地图查看自身上报事件的对应位置信息。
+1. **便民服务模块**：浏览系统内公示的各项便民服务事项卡片（含分类、办理时限、所需材料），点击"在线申办"从已有事项下拉列表中选择，填写联系电话和申请详情后提交。申请提交后自动生成编号（SA-年份+序号），初始状态为"待受理"。仅可查看自己提交的申请记录及办理进度。
+2. **事件上报与处置模块**：线上上报社区事件，填写事件标题、选择分类（城市管理/公共安全/环境卫生/矛盾纠纷/民生服务）、从已有网格下拉列表中选择所属网格、填写事件地址和详细描述、可上传现场图片（JPG/PNG/WebP）。仅可查看自己上报的事件记录及处理进度。
+3. **通知公告模块**：浏览查看社区发布的公告列表（按时间倒序），查看公告详情。
+4. **个人中心模块**：查看并编辑个人资料（姓名、电话），修改登录密码（需验证旧密码）。查看个人统计数据（我的事件数、处理中事件数、我的申请数、待处理申请数）。
+5. **地图可视化模块**：普通用户无法访问地图可视化页面（该功能仅管理员可用），但事件上报时可查看地图定位信息。
 
 ## 三、技术栈
 
-1.后端
+### 1. 后端
 
-- 运行环境：JDK 17
-- 构建工具：Maven 3.9+
-- 核心框架：Spring Boot 3.1.x
-- 数据库：SQLite
+| 技术 | 版本 | 说明 |
+|------|------|------|
+| JDK | 17 (LTS) | Java record 简化模型定义 |
+| 构建工具 | Maven 3.9+ | 依赖管理与构建 |
+| 核心框架 | Spring Boot 3.5.0 | 自动配置、内嵌 Tomcat、端口 8080 |
+| ORM | MyBatis-Plus 3.5.12 | 简化 SQLite 数据访问 |
+| 数据库 | SQLite 3.49.1.0 | 嵌入式文件型数据库，HikariCP 连接池(maximum-pool-size=1) |
+| 认证 | JJWT 0.12.6 + BCrypt | HMAC-SHA256 签发 JWT（24h 有效），BCrypt 不可逆密码加密 |
+| 序列化 | Jackson (ObjectMapper) | JSON 序列化业务数据存储于 app_state 表 |
+| 文件上传 | Spring Multipart | 图片上传至 uploads/ 目录，UUID 重命名 |
 
-2.前端
+### 2. 前端
 
-- 运行环境：Node.js 20.19、npm 10+
-- 构建工具：Vite 5.x
-- 核心框架：Vue 3
-- 组件 / 插件：Element Plus、ECharts 5.x、Axios、Vue Router 4、Pinia
-- 地图：高德地图 JS API
+| 技术 | 版本 | 说明 |
+|------|------|------|
+| 运行环境 | Node.js 20.19、npm 10+ | - |
+| 构建工具 | Vite 7.x | HMR 热更新，开发端口 5173，代理 /api → localhost:8080 |
+| 核心框架 | Vue 3.5 | Composition API + `<script setup>` 语法糖 |
+| UI 组件库 | Element Plus 2.x | el-table / el-dialog / el-form / el-tag / ElMessage |
+| 数据可视化 | ECharts 5.x | 柱状图（事件状态）、饼图（事件分类） |
+| HTTP 客户端 | Axios 1.x | 请求拦截器自动附加 JWT Token，响应拦截器统一错误处理 |
+| 路由 | Vue Router 4.x | 9 条路由 + beforeEach 导航守卫 + sessionStorage Token 校验 |
+| 地图 | 高德地图 JS API 2.0 | MouseTool 多边形绘制 / Polygon 围栏 / Marker 标记 / Icon 自定义图标 |
+
+> ⚠️ 注意：FUN.md 原始设计文档中提到了 Pinia 状态管理库，但在实际开发中发现本系统状态管理需求简单（仅 Token 存储于 sessionStorage + API 数据按页面独立加载），未引入额外状态管理库，减少了打包体积和依赖复杂度。
 
 ## 四、数据库
 
-本系统采用**SQLite**文件型数据库，无需独立部署数据库服务，部署便捷、轻量化，适用于课程设计、毕业设计及中小型业务原型，数据库文件路径为 `backend/grid-service.db`。数据库共包含**10 张数据表**，覆盖用户权限、网格管理、居民房屋档案、便民服务、事件处置、通知公告、操作日志及地图围栏点位等全业务场景，各数据表通过外键建立关联，数据结构规范、逻辑清晰。
+本系统采用 **SQLite** 文件型数据库，无需独立部署数据库服务，部署便捷、轻量化，数据库文件路径为 `backend/grid-service.db`。
 
-### 1.全部数据表清单
+### 1. 存储架构
 
-|        表名         |    中文名称    |                     核心用途                     |
-| :-----------------: | :------------: | :----------------------------------------------: |
-|        user         |     用户表     |    存储系统管理员、普通居民用户账号与权限信息    |
-|        grid         |   网格信息表   |    存储社区网格基础资料、网格员及网格基础坐标    |
-|     grid_fence      | 网格围栏点位表 | 新增表，存储高德地图绘制的网格多边形栅栏拐点坐标 |
-|      resident       |   居民信息表   |  维护辖区居民基础档案、身份及所属网格、房屋信息  |
-|        house        |   房屋信息表   |     记录辖区房屋档案、位置坐标及所属网格信息     |
-|    service_item     |   服务事项表   |         管理线上可办理的各类便民服务事项         |
-| service_application |   服务申请表   |       存储居民提交的便民服务申请及审批记录       |
-|        event        |   事件信息表   |  保存居民上报的社区问题、事件位置及处置流程数据  |
-|       notice        |   通知公告表   |       存放社区公告、活动通知、政策宣传内容       |
-|    operation_log    |   操作日志表   | 记录系统用户所有关键操作，用于行为追溯与运维核查 |
+实际实现采用 **JSON 序列化存储**方案，与原始设计文档中的 10 张关系表方案有所不同。业务数据以 Jackson JSON 字符串形式存储在 `app_state` 单表中：
 
-### 2.各数据表结构及说明
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| state_key | TEXT (PK) | 数据类型标识（grids / residents / houses / serviceItems / events / applications / users / notices / operationLogs） |
+| state_value | TEXT | Jackson 序列化的 List<T> JSON 字符串 |
 
-#### 1. user 用户表
+系统启动时 DataStore.init() 从 app_state 表加载 JSON 反序列化为内存 ArrayList，所有业务操作直接操作内存列表，通过 persist() 方法将全量数据序列化写回数据库。
 
-存储系统登录账号，区分管理员与普通用户角色，管控账号状态。
+### 2. 数据模型（Java Record）
 
-|   字段名    |   类型   |                    说明                     |
-| :---------: | :------: | :-----------------------------------------: |
-|     id      | INTEGER  |                用户 ID，主键                |
-|  username   |   TEXT   |                 登录用户名                  |
-|  password   |   TEXT   |              加密后的登录密码               |
-|  real_name  |   TEXT   |                  真实姓名                   |
-|    phone    |   TEXT   |                  联系电话                   |
-|    role     |   TEXT   | 用户角色：admin（管理员）、user（普通用户） |
-|   status    | INTEGER  |          账号状态：1 启用、0 禁用           |
-| create_time | DATETIME |                账号创建时间                 |
-| update_time | DATETIME |              账号信息更新时间               |
+#### SystemUser 用户模型
+对应原始设计的 user 表，实际字段：
+`id, username, displayName, password(BCrypt密文), role(管理员/普通用户), phone, status(启用/禁用), createTime, updateTime`
 
-#### 2.grid 网格信息表
+#### Grid 网格模型
+对应原始设计的 grid + grid_fence 表（合并），实际字段：
+`id, code, name, community, description, staffName, staffPhone, residentCount, longitude, latitude, fencePoints`
 
-存储社区网格基础信息、网格员信息及网格中心经纬度，是网格化管理的基础数据表。
+fencePoints 以 `[[lng,lat],[lng,lat],...]` JSON 字符串存储围栏所有拐点坐标，替代原始设计中独立的 grid_fence 表。
 
-|   字段名    |   类型   |       说明       |
-| :---------: | :------: | :--------------: |
-|     id      | INTEGER  |  网格 ID，主键   |
-|  grid_name  |   TEXT   |     网格名称     |
-|  grid_code  |   TEXT   |     网格编号     |
-|  community  |   TEXT   |     所属社区     |
-| staff_name  |   TEXT   |    网格员姓名    |
-| staff_phone |   TEXT   |  网格员联系电话  |
-|  area_desc  |   TEXT   | 网格范围文字描述 |
-|  longitude  |   REAL   |   网格中心经度   |
-|  latitude   |   REAL   |   网格中心纬度   |
-| create_time | DATETIME |   数据创建时间   |
-| update_time | DATETIME |   数据更新时间   |
+#### Resident 居民模型
+`id, name, gender, idCard, phone, gridName, gridId, address, houseId, residentType(常住人口/流动人口/独居老人/特殊人群), remark`
 
-#### 3. grid_fence 网格围栏点位表（新增）
+#### House 房屋模型
+`id, houseCode, address, building, unit, roomNumber, gridName, gridId, houseType(商品房/经济适用房/公租房/自建房), usageStatus(自住/出租/空置), ownerName, residentCount, longitude, latitude`
 
-专为高德地图网格栅栏设计，按顺序存储多边形围栏所有拐点坐标，实现围栏数据持久化与地图回显，与网格表为一对多关联关系。
+#### ServiceItem 服务事项模型
+`id, name, category, department, description, requiredMaterials, process, timeLimit, status(启用/停用)`
 
-|   字段名    |   类型   |               说明               |
-| :---------: | :------: | :------------------------------: |
-|     id      | INTEGER  |          点位 ID，主键           |
-|   grid_id   | INTEGER  |     关联网格表主键 ID，外键      |
-| point_sort  | INTEGER  | 点位排序号，决定围栏拐点绘制顺序 |
-|  longitude  |   REAL   |             拐点经度             |
-|  latitude   |   REAL   |             拐点纬度             |
-| create_time | DATETIME |           点位创建时间           |
-| update_time | DATETIME |           点位更新时间           |
+#### ServiceApplication 服务申请模型
+`id, code, userId, serviceItemId, itemName, applicantName, applicantPhone, ownerUsername, content, attachment, status(待受理/办理中/已办结/已驳回), handleResult, createdAt, updatedAt`
 
-#### 4. resident 居民信息表
+#### Event 事件模型
+`id, code, title, category(城市管理/公共安全/环境卫生/矛盾纠纷/民生服务), gridName, reporter, ownerUsername, description, imageUrl, address, longitude, latitude, status(待处理/处理中/已办结), handlerId, handleResult, createdAt, updatedAt`
 
-登记辖区全体居民档案，关联网格与房屋信息，支持特殊群体分类管理。
+#### Notice 通知公告模型
+`id, title, type(社区通知/便民服务/政策宣传/社区活动), content, publisherId, status(已发布/草稿), publishedAt`
 
-|    字段名     |   类型   |              说明              |
-| :-----------: | :------: | :----------------------------: |
-|      id       | INTEGER  |         居民 ID，主键          |
-|     name      |   TEXT   |            居民姓名            |
-|    gender     |   TEXT   |              性别              |
-|    id_card    |   TEXT   |            身份证号            |
-|     phone     |   TEXT   |            联系电话            |
-|    address    |   TEXT   |            居住地址            |
-|    grid_id    | INTEGER  |       所属网格 ID，外键        |
-|   house_id    | INTEGER  |       所属房屋 ID，外键        |
-| resident_type |   TEXT   | 居民类型：常住、流动、特殊人群 |
-|    remark     |   TEXT   |            备注信息            |
-|  create_time  | DATETIME |          档案创建时间          |
-|  update_time  | DATETIME |          档案更新时间          |
+#### OperationLog 操作日志模型
+`id, userId, username, operation, module, createTime`
 
-#### 5. house 房屋信息表
+### 3. 数据关联关系
 
-记录辖区房屋档案、位置坐标、使用状态，关联所属网格，可绑定对应居住居民。
+由于采用 JSON 序列化存储（非关系型），数据关联在应用层通过字段匹配和 Stream 过滤实现：
 
-|    字段名    |   类型   |            说明            |
-| :----------: | :------: | :------------------------: |
-|      id      | INTEGER  |       房屋 ID，主键        |
-|  house_code  |   TEXT   |          房屋编号          |
-|   address    |   TEXT   |        房屋详细地址        |
-|   building   |   TEXT   |            楼栋            |
-|     unit     |   TEXT   |            单元            |
-| room_number  |   TEXT   |           门牌号           |
-|  house_type  |   TEXT   |          房屋类型          |
-| usage_status |   TEXT   | 使用状态：自住、出租、空置 |
-|   grid_id    | INTEGER  |     所属网格 ID，外键      |
-|  longitude   |   REAL   |          房屋经度          |
-|   latitude   |   REAL   |          房屋纬度          |
-| create_time  | DATETIME |        数据创建时间        |
-| update_time  | DATETIME |        数据更新时间        |
+1. ServiceApplication.ownerUsername → SystemUser.username：服务申请归属过滤（普通用户仅见本人申请）
+2. Event.ownerUsername → SystemUser.username：事件归属过滤（普通用户仅见本人事件）
+3. Resident.gridId → Grid.id / Resident.houseId → House.id：居民与网格、房屋的关联
+4. House.gridId → Grid.id：房屋与网格的关联
+5. Grid.fencePoints：围栏坐标直接存储于网格模型中，无需独立的 grid_fence 表
+6. OperationLog.userId → SystemUser.id：日志归属关联
 
-#### 6. service_item 服务事项表
+### 4. 与原始设计的差异说明
 
-由管理员维护，存储对外公示的便民服务类目、办理要求与流程。
+| 原始设计（10 表关系型） | 实际实现（JSON 序列化） | 原因 |
+|------------------------|----------------------|------|
+| 独立 grid_fence 表 | Grid.fencePoints JSON 字段 | 围栏坐标与网格强绑定，合并简化存取 |
+| INTEGER 状态字段 | String 中文状态值 | 提高可读性和前后端一致性 |
+| 独立 create_time/update_time | 内嵌于 Java record | Jackson 自动序列化时间字段 |
+| 数据库外键约束 | 应用层 Stream 过滤 | 无外键约束的 SQLite 下保证灵活性 |
+| ip 字段（操作日志） | 暂未实现 | 课程项目简化，通过 username 追溯即可 |
 
-|       字段名       |   类型   |           说明           |
-| :----------------: | :------: | :----------------------: |
-|         id         | INTEGER  |    服务事项 ID，主键     |
-|       title        |   TEXT   |       服务事项名称       |
-|      category      |   TEXT   |         服务类别         |
-|    description     |   TEXT   |         服务简介         |
-| required_materials |   TEXT   |       办理所需材料       |
-|      process       |   TEXT   |         办理流程         |
-|     time_limit     |   TEXT   |         办理时限         |
-|       status       | INTEGER  | 事项状态：1 启用、0 停用 |
-|    create_time     | DATETIME |         创建时间         |
-|    update_time     | DATETIME |         更新时间         |
+## 五、系统架构
 
-#### 7. service_application 服务申请表
+### 前端页面（10 个 Vue SFC）
 
-存储居民提交的服务申请单，记录申请内容、附件、审批状态与办理结果，关联用户及服务事项。
+| 页面 | 路由 | 权限 |
+|------|------|------|
+| Login.vue | /login | 公开 |
+| Dashboard.vue | / | 管理员 |
+| GridList.vue | /grids | GET 全员 / 写操作管理员 |
+| BaseInfo.vue | /base-info | 管理员 |
+| ServiceList.vue | /services | 全员（管理员见全部，普通用户见本人） |
+| EventList.vue | /events | 全员（管理员见全部，普通用户见本人） |
+| NoticeList.vue | /notices | GET 全员 / 写操作管理员 |
+| UserList.vue | /users | 管理员 |
+| Profile.vue | /profile | 全员 |
+| MapView.vue | /map | 管理员 |
 
-|     字段名      |   类型   |                   说明                   |
-| :-------------: | :------: | :--------------------------------------: |
-|       id        | INTEGER  |              申请 ID，主键               |
-|     user_id     | INTEGER  |           申请人用户 ID，外键            |
-| service_item_id | INTEGER  |          对应服务事项 ID，外键           |
-| applicant_name  |   TEXT   |                申请人姓名                |
-| applicant_phone |   TEXT   |                申请人电话                |
-|     content     |   TEXT   |                 申请详情                 |
-|   attachment    |   TEXT   |               附件文件路径               |
-|     status      |   TEXT   | 办理状态：待受理、办理中、已办结、已驳回 |
-|  handle_result  |   TEXT   |                 办理结果                 |
-|   create_time   | DATETIME |               申请提交时间               |
-|   update_time   | DATETIME |               状态更新时间               |
+### 后端 Controller（10 个）
 
-#### 8. event 事件信息表
+`AuthController` / `GridController` / `BaseInfoController` / `ServiceItemController` / `ServiceApplicationController` / `EventController` / `NoticeController` / `DashboardController` / `SystemUserController` / `UploadController`
 
-存储居民上报的社区事件、现场图片、地理位置、处置人员及处理结果，支撑事件闭环管理。
+### 认证流程
 
-|    字段名     |   类型   |               说明               |
-| :-----------: | :------: | :------------------------------: |
-|      id       | INTEGER  |          事件 ID，主键           |
-|    user_id    | INTEGER  |       上报人用户 ID，外键        |
-|     title     |   TEXT   |             事件标题             |
-|   category    |   TEXT   |             事件分类             |
-|  description  |   TEXT   |           事件详细描述           |
-|    address    |   TEXT   |           事件发生地址           |
-|   longitude   |   REAL   |             事件经度             |
-|   latitude    |   REAL   |             事件纬度             |
-|   image_url   |   TEXT   |           现场图片路径           |
-|    status     |   TEXT   | 事件状态：待受理、处理中、已办结 |
-|  handler_id   | INTEGER  |         处理人 ID，外键          |
-| handle_result |   TEXT   |             处理结果             |
-|  create_time  | DATETIME |           事件上报时间           |
-|  update_time  | DATETIME |           处理更新时间           |
+```
+用户登录 → BCrypt 密码验证 → JwtUtil.generate() 签发 Token
+→ 前端存入 sessionStorage（标签页隔离）
+→ 后续请求 Axios 拦截器自动附加 Authorization: Bearer <token>
+→ AuthInterceptor 验证 Token → 注入 UserView 到 request
+→ RoleInterceptor 校验角色权限（区分 GET/非GET 方法）
+```
 
-#### 9. notice 通知公告表
+### 安全机制
 
-存储社区发布的公告、活动、政策内容，区分发布状态与公告类型。
+- 密码：BCrypt 单向哈希加密，不可逆
+- 认证：JWT HMAC-SHA256 签名，24h 过期
+- 权限：双层拦截器（AuthInterceptor + RoleInterceptor），精确到 HTTP 方法级
+- 存储：sessionStorage 标签页隔离，关闭标签页即清除 Token
+- 账号保护：admin 账号不可删除
+- 数据隔离：普通用户通过 ownerUsername 过滤仅见本人数据
 
-|    字段名    |   类型   |            说明            |
-| :----------: | :------: | :------------------------: |
-|      id      | INTEGER  |       公告 ID，主键        |
-|    title     |   TEXT   |          公告标题          |
-|   content    |   TEXT   |          公告内容          |
-|     type     |   TEXT   | 公告类型：通知、活动、政策 |
-| publisher_id | INTEGER  |    发布人用户 ID，外键     |
-|    status    | INTEGER  | 发布状态：1 已发布、0 草稿 |
-| create_time  | DATETIME |          发布时间          |
-| update_time  | DATETIME |        编辑更新时间        |
+### 与原始设计文档的偏差总结
 
-#### 10. operation_log 操作日志表
+原始 FUN.md 以"功能规划文档"角色描述系统愿景，实际实现在此基础上做了以下适配：
 
-全量记录用户在系统内的关键操作，包含操作账号、模块、内容、访问 IP，便于问题追溯与审计。
-
-|   字段名    |   类型   |        说明        |
-| :---------: | :------: | :----------------: |
-|     id      | INTEGER  |   日志 ID，主键    |
-|   user_id   | INTEGER  | 操作用户 ID，外键  |
-|  username   |   TEXT   |     操作用户名     |
-|  operation  |   TEXT   |    具体操作内容    |
-|   module    |   TEXT   |  操作所属功能模块  |
-|     ip      |   TEXT   | 操作客户端 IP 地址 |
-| create_time | DATETIME |      操作时间      |
-
-### 3.整体表关联关系
-
-1. 用户表 `user` 分别关联服务申请表、事件信息表、通知公告表、操作日志表，实现账号与业务数据绑定；
-2. 网格表 `grid` 一对多关联**网格围栏点位表**、居民信息表、房屋信息表，是辖区空间管理的核心主表；
-3. 房屋信息表 `house` 一对多关联居民信息表，实现房屋与居住人员绑定；
-4. 服务事项表 `service_item` 一对多关联服务申请表，构建便民服务业务流程；
-5. 所有外键关联逻辑清晰，数据联动完整，同时兼容高德地图围栏点位存储、地图定位等可视化需求。
+- 技术栈版本升级：Spring Boot 3.1→3.5、Vite 5→7
+- 存储方案简化：10 张关系表→JSON 序列化单表（更适合课程项目快速迭代）
+- 未引入 Pinia（状态管理需求简单，无需额外依赖）
+- 围栏存储合并：grid_fence 独立表→Grid.fencePoints JSON 字段
+- 角色名中文化：admin/user→管理员/普通用户
+- 认证升级：Session→JWT Token
+- 地图从"预留"到完整集成：围栏圈选+多层标记+总览页面
